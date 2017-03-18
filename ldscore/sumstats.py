@@ -365,6 +365,12 @@ def estimate_rg(args, log):
 
     log.log('\nSummary of Genetic Correlation Results\n' +
             _get_rg_table(rg_paths, RG, args))
+
+    if args.overlap_annot:
+        log.log('Yup! The overlapping annotations argument has been set!')
+        #overlap_matrix, M_tot = _read_annot(args, log)
+
+        #df_results = rghat._overlap_output()
     return RG
 
 
@@ -428,7 +434,7 @@ def _print_gencor(args, log, rghat, ref_ld_cnames, i, rg_paths, print_hsq1):
     log.log(l('\nGenetic Covariance\n'))
     log.log(rghat.gencov.summary(ref_ld_cnames, P=P, K=K))
     log.log(l('\nGenetic Correlation\n'))
-    log.log(rghat.summary() + '\n')
+    log.log(rghat.summary(silly = args.return_silly_things) + '\n')
 
 
 def _merge_sumstats_sumstats(args, sumstats1, sumstats2, log):
