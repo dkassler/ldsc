@@ -556,6 +556,11 @@ class Gencov(LD_Score_Regression):
         self.p, self.z = p_z_norm(self.tot, self.tot_se)
         self.mean_z1z2 = np.mean(np.multiply(z1, z2))
 
+    def _overlap_output(self):
+        '''Test mode function, does nothing but be noisy when called'''
+        log.log('Genvov._overlap_annot called!!!')
+        print('Just in case I am misusing the log.log method')
+
     def summary(self, ref_ld_colnames, P=None, K=None):
         '''Print summary of the LD Score regression.'''
         out = []
@@ -709,6 +714,33 @@ class RG(object):
             self.rg_se = float(rg.jknife_se)
             self.rg_ratio = float(rg_ratio)
             self.p, self.z = p_z_norm(self.rg_ratio, self.rg_se)
+
+        rg_ratio_cat = []
+        rg_se_cat = []
+        z_cat = []
+        p_cat = []
+        for i in range(len(hsq1.cat[0])):
+            if (hsq1.cat[0][i]*hsq2.cat[0][i] <= 0):
+                rg_ratio = rg = rg_se = 'NA'
+                p = z = 'NA'
+            else:
+                rg_ratio = np.array(gencov.cat[0][i] / np.sqrt(hsq1.cat[0][i] * hsq2.cat[0][i])).reshape((1, 1))
+                denom_delete_values = np.sqrt(
+                    np.multiply(hsq1.tot_delete_values, hsq2.tot_delete_values))
+                rg = jk.RatioJackknife(
+                    rg_ratio, gencov.tot_delete_values, denom_delete_values)
+                rg_jknife = float(rg.jknife_est)
+                rg_se = float(rg.jknife_se)
+                rg_ratio = float(rg_ratio)
+                p, z = p_z_norm(rg_ratio, rg_se)
+            rg_ratio_cat.append(rg_ratio)
+            rg_se_cat.append(rg_se)
+            z_cat.append(z)
+            p_cat.append(p)
+        self.rg_ratio = rg_ratio_cat
+        self.rg_se = rg_se_cat
+        self.p = p_cat
+        self.z = z_cat
 
     def summary(self, silly=False):
         '''Print output of Gencor object.'''
