@@ -726,9 +726,9 @@ class RG(object):
             else:
                 rg_ratio = np.array(gencov.cat[0][i] / np.sqrt(hsq1.cat[0][i] * hsq2.cat[0][i])).reshape((1, 1))
                 denom_delete_values = np.sqrt(
-                    np.multiply(hsq1.tot_delete_values, hsq2.tot_delete_values))
+                        np.multiply(hsq1.part_delete_values[:,i], hsq2.part_delete_values[:,i])).reshape(hsq1.tot_delete_values.shape)
                 rg = jk.RatioJackknife(
-                    rg_ratio, gencov.tot_delete_values, denom_delete_values)
+                        rg_ratio, gencov.part_delete_values[:,i].reshape(gencov.tot_delete_values.shape), denom_delete_values)
                 rg_jknife = float(rg.jknife_est)
                 rg_se = float(rg.jknife_se)
                 rg_ratio = float(rg_ratio)
