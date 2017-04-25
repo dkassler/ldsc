@@ -685,7 +685,7 @@ class Gencov(LD_Score_Regression):
 class RG(object):
 
     def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, intercept_hsq2=None,
-                 intercept_gencov=None, n_blocks=200, slow=False, twostep=None):
+                 intercept_gencov=None, n_blocks=200, slow=False, twostep=None, overlap_matrix = None):
         self.intercept_gencov = intercept_gencov
         self._negative_hsq = None
         n_snp, n_annot = x.shape
@@ -715,32 +715,45 @@ class RG(object):
             self.rg_ratio = float(rg_ratio)
             self.p, self.z = p_z_norm(self.rg_ratio, self.rg_se)
 
-        rg_ratio_cat = []
-        rg_se_cat = []
-        z_cat = []
-        p_cat = []
-        for i in range(len(hsq1.cat[0])):
-            if (hsq1.cat[0][i]*hsq2.cat[0][i] <= 0):
-                rg_ratio = rg = rg_se = 'NA'
-                p = z = 'NA'
-            else:
-                rg_ratio = np.array(gencov.cat[0][i] / np.sqrt(hsq1.cat[0][i] * hsq2.cat[0][i])).reshape((1, 1))
-                denom_delete_values = np.sqrt(
-                        np.multiply(hsq1.part_delete_values[:,i], hsq2.part_delete_values[:,i])).reshape(hsq1.tot_delete_values.shape)
-                rg = jk.RatioJackknife(
-                        rg_ratio, gencov.part_delete_values[:,i].reshape(gencov.tot_delete_values.shape), denom_delete_values)
-                rg_jknife = float(rg.jknife_est)
-                rg_se = float(rg.jknife_se)
-                rg_ratio = float(rg_ratio)
-                p, z = p_z_norm(rg_ratio, rg_se)
-            rg_ratio_cat.append(rg_ratio)
-            rg_se_cat.append(rg_se)
-            z_cat.append(z)
-            p_cat.append(p)
-        self.rg_ratio = rg_ratio_cat
-        self.rg_se = rg_se_cat
-        self.p = p_cat
-        self.z = z_cat
+        if (overlap_matrix is not None):
+            hsq1.part_delete_values = np.dot(hsq1.part_delete_values, overlap_matrix)
+            hsq2.part_delete_values = np.dot(hsq2.part_delete_values, overlap_matrix)
+            gencov.part_delete_values = np.dot(gencov.part_delete_values, overlap_matrix)
+
+        if (len(hsq1.cat[0]) > 1):
+            rg_ratio_cat = []
+            rg_se_cat = []
+            z_cat = []
+            p_cat = []
+            for i in range(len(hsq1.cat[0])):
+                if (hsq1.cat[0][i]*hsq2.cat[0][i] <= 0):
+                    rg_ratio = rg = rg_se = 'NA'
+                    p = z = 'NA'
+                else:
+                    rg_ratio = np.array(gencov.cat[0][i] / np.sqrt(hsq1.cat[0][i] * hsq2.cat[0][i])).reshape((1, 1))
+                    denom_delete_values = np.sqrt(
+                            np.multiply(hsq1.part_delete_values[:,i], hsq2.part_delete_values[:,i])).reshape(hsq1.tot_delete_values.shape)
+                    rg = jk.RatioJackknife(
+                            rg_ratio, gencov.part_delete_values[:,i].reshape(gencov.tot_delete_values.shape), denom_delete_values)
+                    rg_jknife = float(rg.jknife_est)
+                    rg_se = float(rg.jknife_se)
+                    rg_ratio = float(rg_ratio)
+                    p, z = p_z_norm(rg_ratio, rg_se)
+                rg_ratio_cat.append(rg_ratio)
+                rg_se_cat.append(rg_se)
+                z_cat.append(z)
+                p_cat.append(p)
+            self.rg_ratio = rg_ratio_cat
+            self.rg_se = rg_se_cat
+            self.p = p_cat
+            self.z = z_cat
+    
+    def _overlap_output(self, category_names, overlap_matrix, M_annot, M_tot, print_coefficients):
+        '''LD Score regressoin summary for overlapping categories'''
+        #TODO: check if H wants jackknifing here, or with init
+        hsq1_delete_values = np.dot(self.hsq1.part_delete_values, overlap_matrix)
+        hsq2_delete_values = np.dot(self.hsq2.part_delete_values, overlap_matrix)
+        #denom_delete_values
 
     def summary(self, silly=False):
         '''Print output of Gencor object.'''

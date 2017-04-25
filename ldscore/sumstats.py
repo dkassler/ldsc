@@ -475,11 +475,13 @@ def _rg(sumstats, args, log, M_annot, ref_ld_cnames, w_ld_cname, i):
     ref_ld = sumstats.as_matrix(columns=ref_ld_cnames)
     intercepts = [args.intercept_h2[0], args.intercept_h2[
         i + 1], args.intercept_gencov[i + 1]]
+    overlap_matrix, M_tot = _read_annot(args, log)
     rghat = reg.RG(s(sumstats.Z1), s(sumstats.Z2),
                    ref_ld, s(sumstats[w_ld_cname]), s(
                        sumstats.N1), s(sumstats.N2), M_annot,
                    intercept_hsq1=intercepts[0], intercept_hsq2=intercepts[1],
-                   intercept_gencov=intercepts[2], n_blocks=n_blocks, twostep=args.two_step)
+                   intercept_gencov=intercepts[2], n_blocks=n_blocks,
+                   twostep=args.two_step, overlap_matrix=overlap_matrix)
 
     return rghat
 
