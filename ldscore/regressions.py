@@ -678,19 +678,23 @@ class Gencov(LD_Score_Regression):
 
 
 class RG(object):
+    '''
+    Genetic correllation
+    '''
 
-    def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, intercept_hsq2=None,
-                 intercept_gencov=None, n_blocks=200, slow=False, twostep=None):
+    def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, 
+            intercept_hsq2=None, intercept_gencov=None, n_blocks=200, 
+            slow=False, twostep=None):
         self.intercept_gencov = intercept_gencov
         self._negative_hsq = None
         n_snp, n_annot = x.shape
-        hsq1 = Hsq(np.square(z1), x, w, N1, M, n_blocks=n_blocks, intercept=intercept_hsq1,
-                   slow=slow, twostep=twostep)
-        hsq2 = Hsq(np.square(z2), x, w, N2, M, n_blocks=n_blocks, intercept=intercept_hsq2,
-                   slow=slow, twostep=twostep)
-        gencov = Gencov(z1, z2, x, w, N1, N2, M, hsq1.tot, hsq2.tot, hsq1.intercept,
-                        hsq2.intercept, n_blocks, intercept_gencov=intercept_gencov, slow=slow,
-                        twostep=twostep)
+        hsq1 = Hsq(np.square(z1), x, w, N1, M, n_blocks=n_blocks, 
+                intercept=intercept_hsq1, slow=slow, twostep=twostep)
+        hsq2 = Hsq(np.square(z2), x, w, N2, M, n_blocks=n_blocks,
+                intercept=intercept_hsq2, slow=slow, twostep=twostep)
+        gencov = Gencov(z1, z2, x, w, N1, N2, M, hsq1.tot, hsq2.tot, 
+                hsq1.intercept, hsq2.intercept, n_blocks, 
+                intercept_gencov=intercept_gencov, slow=slow, twostep=twostep)
         gencov.N1 = None  # save memory
         gencov.N2 = None
         self.hsq1, self.hsq2, self.gencov = hsq1, hsq2, gencov
