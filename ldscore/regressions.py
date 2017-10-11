@@ -684,8 +684,9 @@ class Gencov(LD_Score_Regression):
 
 class RG(object):
 
-    def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, intercept_hsq2=None,
-                 intercept_gencov=None, n_blocks=200, slow=False, twostep=None, overlap_matrix = None):
+    def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, 
+            intercept_hsq2=None, intercept_gencov=None, n_blocks=200, 
+            slow=False, twostep=None, overlap_matrix = None):
         self.intercept_gencov = intercept_gencov
         self._negative_hsq = None
         n_snp, n_annot = x.shape
