@@ -721,7 +721,9 @@ class RG(object):
             hsq2.part_delete_values = np.dot(hsq2.part_delete_values, overlap_matrix)
             gencov.part_delete_values = np.dot(gencov.part_delete_values, overlap_matrix)
 
-        if (len(hsq1.cat[0]) > 1):
+        self.ncat = len(hsq1.cat[0])
+
+        if (self.ncat > 1):
             rg_ratio_cat = []
             rg_se_cat = []
             z_cat = []
@@ -749,10 +751,11 @@ class RG(object):
                 rg_se_cat.append(rg_se)
                 z_cat.append(z)
                 p_cat.append(p)
-            self.rg_ratio = rg_ratio_cat
-            self.rg_se = rg_se_cat
-            self.p = p_cat
-            self.z = z_cat
+
+            self.part_rg_ratio = rg_ratio_cat
+            self.part_rg_se = rg_se_cat
+            self.part_p = p_cat
+            self.part_z = z_cat
     
     def _overlap_output(self, category_names, overlap_matrix, M_annot, M_tot, print_coefficients):
         '''LD Score regressoin summary for overlapping categories'''
@@ -791,4 +794,11 @@ class RG(object):
                 ' (' + s(self.rg_se) + ')')
             out.append('Z-score: ' + s(self.z))
             out.append('P: ' + s(self.p))
+
+        if self.ncat > 1:
+            out.append('Partitioned Genetic Correlation: ' + ', '.join(
+                ['%s (%s)' % (s(x[0]),s(x[1])) for x in zip(self.part_rg_ratio, self.part_rg_se)]))
+            out.append('Category Z-Scores: ' + s(self.part_z))
+            out.append('Category P: ' + s(self.part_p))
+
         return remove_brackets('\n'.join(out))
