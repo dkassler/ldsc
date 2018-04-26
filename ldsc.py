@@ -543,6 +543,8 @@ parser.add_argument('--chisq-max', default=None, type=float,
 parser.add_argument('--ref-ld-chr-cts', default=None, type=str,
     help='Name of a file that has a list of file name prefixes for cell-type-specific analysis.')
 parser.add_argument('--print-all-cts', action='store_true', default=False)
+parser.add_argument('--min-denom-h2-z', default=None, type=float,
+        help = 'Mininum number of standard deviations above zero we require each h2 to be in order to return genetic correlation.')
 
 # Flags for both LD Score estimation and h2/gencor estimation
 parser.add_argument('--print-cov', default=False, action='store_true',
