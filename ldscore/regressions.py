@@ -686,7 +686,7 @@ class RG(object):
 
     def __init__(self, z1, z2, x, w, N1, N2, M, intercept_hsq1=None, 
             intercept_hsq2=None, intercept_gencov=None, n_blocks=200, 
-            slow=False, twostep=None, overlap_matrix = None):
+            slow=False, twostep=None, overlap_matrix = None, hsq_filter=None):
         self.intercept_gencov = intercept_gencov
         self._negative_hsq = None
         n_snp, n_annot = x.shape
@@ -702,6 +702,9 @@ class RG(object):
         self.hsq1, self.hsq2, self.gencov = hsq1, hsq2, gencov
         if (hsq1.tot <= 0 or hsq2.tot <= 0):
             self._negative_hsq = True
+
+        hsq_min_z = 0 if hsq_filter is None else hsq_filter
+        if (hsq1.tot / hsq1.tot_se <= hsq_min_z or hsq2.tot / hsq2.tot_se <= hsq_min_z):
             self.rg_ratio = self.rg = self.rg_se = 'NA'
             self.p = self.z = 'NA'
         else:
