@@ -729,7 +729,7 @@ class RG(object):
             z_cat = []
             p_cat = []
             for i in range(len(hsq1.cat[0])):
-                if (hsq1.cat[0][i]*hsq2.cat[0][i] <= 0):
+                if (hsq1.cat[0][i] <= 0 or hsq2.cat[0][i] <= 0):
                     rg_ratio = rg = rg_se = 'NA'
                     p = z = 'NA'
                 else:
