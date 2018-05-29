@@ -17,7 +17,14 @@ from scipy.stats import t as tdist
 from collections import namedtuple
 np.seterr(divide='raise', invalid='raise')
 
-s = lambda x: remove_brackets(str(np.matrix(x)))
+#s = lambda x: remove_brackets(str(np.matrix(x)))
+
+def s(x):
+    if type(x) is str:
+        return x
+    else:
+        y = remove_brackets(str(np.matrix(x)))
+        return y
 
 
 def update_separators(s, ii):
@@ -689,6 +696,7 @@ class RG(object):
             slow=False, twostep=None, overlap_matrix = None, hsq_filter=None):
         self.intercept_gencov = intercept_gencov
         self._negative_hsq = None
+        self._negative_hsq_cat = None
         n_snp, n_annot = x.shape
         hsq1 = Hsq(np.square(z1), x, w, N1, M, n_blocks=n_blocks, 
                 intercept=intercept_hsq1, slow=slow, twostep=twostep)
@@ -732,11 +740,15 @@ class RG(object):
             z_cat = []
             p_cat = []
             for i in range(len(hsq1.cat[0])):
-                if (hsq1.cat[0][i] <= 0 or hsq2.cat[0][i] <= 0):
+                if (hsq1.cat[0][i] <= 0 or hsq2.cat[0][i] <= 0 or
+                        np.any(hsq1.part_delete_values[:,i] <= 0) or 
+                        np.any(hsq2.part_delete_values[:,i] <= 0)):
                     rg_ratio = rg = rg_se = 'NA'
                     p = z = 'NA'
+                    self._negative_hsq_cat = True
                 else:
                     rg_ratio = np.array(gencov.cat[0][i] / np.sqrt(hsq1.cat[0][i] * hsq2.cat[0][i])).reshape((1, 1))
+                    
                     denom_delete_values = np.sqrt(
                             np.multiply(hsq1.part_delete_values[:,i], hsq2.part_delete_values[:,i])).reshape(hsq1.tot_delete_values.shape)
 
@@ -803,5 +815,8 @@ class RG(object):
                 ['%s (%s)' % (s(x[0]),s(x[1])) for x in zip(self.part_rg_ratio, self.part_rg_se)]))
             out.append('Category Z-Scores: ' + s(self.part_z))
             out.append('Category P: ' + s(self.part_p))
+
+        if self._negative_hsq_cat:
+            out.append('WARNING: One of the h2\'s for one or more categories was out of bounds.')
 
         return remove_brackets('\n'.join(out))

@@ -83,3 +83,7 @@ docs/_build/
 # sublime text
 *.idea*
 *sublime*
+
+# vim swap files
+*.sw[a-p]
+
